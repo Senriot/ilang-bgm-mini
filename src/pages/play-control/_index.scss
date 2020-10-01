@@ -1,0 +1,57 @@
+.kongzhi-dailog{
+  padding: 0 30rpx;
+  box-sizing: border-box;
+}
+.kongzhi-log{
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 0 5px 5px #efefef;
+  border-radius: 10rpx;
+  height: auto;
+  padding: 30rpx 30rpx 20rpx;
+  box-sizing: border-box;
+}
+.kongzhi-main{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 30rpx;
+}
+.kongzhi-main>image:nth-child(1){
+  width: 26rpx;
+  height: 28rpx;
+}
+.kongzhi-main>image:nth-child(3){
+  width: 38rpx;
+  height: 28rpx;
+}
+movable-area {
+  width: calc(100% - 104rpx);
+  height: 8rpx;
+  border-radius: 4rpx;
+  background: #f7f8fa;
+}
+movable-view{
+  width: 25rpx;
+  height: 25rpx;
+  border-radius: 50%;
+  background: #fff;
+  top: -8rpx;
+  box-shadow: 0 0 5px 5px #efefef;
+}
+.yanse-blue{
+  background: #1da1f2;
+  height: 8rpx;
+  border-radius: 4rpx;
+}
+.kongzhi-bottom{
+  margin-top: 30rpx;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.kongzhi-bottom>image{
+  width: 50rpx;
+  height: 50rpx;
+}
