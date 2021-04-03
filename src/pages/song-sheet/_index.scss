@@ -22,10 +22,8 @@
   background-repeat:   no-repeat;
   background-size:     cover;
   background-position: 50%;
-  -webkit-filter:      blur(20px);
-  filter:              blur(20px);
-  -webkit-transform:   scale(1.5);
-  transform:           scale(1.5);
+  -webkit-filter:      blur(10px);
+  filter:              blur(10px);
 }
 
 .play-list-bg, .play-list-bg::after
@@ -37,7 +35,7 @@
   bottom:   0;
   z-index:  1;
   width:    100%;
-  height:   500rpx;
+  height:   550rpx;
 }
 
 .play-list-bg::after

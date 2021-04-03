@@ -1,7 +1,7 @@
 <template>
   <view class="img">
     <u-image id="image" border-radius="5" :src="src" width="100%" height="28vw"/>
-    <view class="title">{{ title }}</view>
+    <view class="title" :style="'-webkit-line-clamp'">{{ title }}</view>
     <view class="sub-title" v-if="subTitle">{{ subTitle }}</view>
   </view>
 </template>
@@ -9,9 +9,9 @@
 <script>
 export default {
   name: "song-grid",
-  data(){
-    return{
-      imgHeight:0
+  data() {
+    return {
+      imgHeight: 0
     }
   },
   props: {
@@ -27,12 +27,11 @@ export default {
       type: String,
       default: null
     },
-    padding: {
+    titleLine: {
       type: Number,
-      default: 10
+      default: 2
     }
-  }, mounted() {
-  }
+  },
 }
 </script>
 

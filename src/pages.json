@@ -59,6 +59,36 @@
       "style": {
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/device-setting/index",
+      "style": {
+        "navigationBarTitleText": "设备设置"
+      }
+    },
+    {
+      "path": "pages/device-setting/channel-setting",
+      "style": {
+        "navigationBarTitleText": "通道设置"
+      }
+    },
+    {
+      "path": "pages/connect-device/wifi",
+      "style": {
+        "navigationBarTitleText": "wifi"
+      }
+    },
+    {
+      "path": "pages/index/MoreSingle",
+      "style": {
+        "navigationBarTitleText": "单曲"
+      }
+    },
+    {
+      "path": "pages/album-detail/album-detail",
+      "style": {
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {
@@ -91,7 +121,10 @@
       "van-button": "/wxcomponents/vant-weapp/button/index",
       "van-switch": "/wxcomponents/vant-weapp/switch/index",
       "van-sticky": "/wxcomponents/vant-weapp/sticky/index",
-      "van-slider": "/wxcomponents/vant-weapp/slider/index"
+      "van-slider": "/wxcomponents/vant-weapp/slider/index",
+      "van-popup": "/wxcomponents/vant-weapp/popup/index",
+      "van-picker": "/wxcomponents/vant-weapp/picker/index",
+      "van-swipe-cell": "/wxcomponents/vant-weapp/swipe-cell/index"
     }
   },
   "tabBar": {

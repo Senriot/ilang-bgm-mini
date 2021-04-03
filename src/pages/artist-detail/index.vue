@@ -1,5 +1,5 @@
 <template>
-  <view>
+  <view id="root">
     <u-navbar id="navBar"
               :back-icon-color="isFixed?'#000':'#fff'"
               :title="isFixed?currentArtist.name:''"
@@ -14,10 +14,15 @@
       <view class="header_bg" :style="'background-image: url('+currentArtist.picUrl+'?param=500y500)'">
 
       </view>
-      <text class="header_title text-white text-shadow text-xxl">{{currentArtist.name}}</text>
+      <view class="header_title">
+        <text class="text-white text-shadow text-xxl">{{currentArtist.name}}</text>
+        <text class="text-shadow briefDesc text-sm">{{currentArtist.briefDesc}}</text>
+      </view>
+
     </view>
     <van-tabs
         :active="curTab"
+        :color="'#5578eb'"
         @change="tabChanged"
         animated
         color="#0081ff"
@@ -26,31 +31,16 @@
         @scroll="scroll"
         :offset-top="navbarHeight"
         swipeable>
-      <van-tab title="单曲">
-        <view class="cu-bar bg-white solid-bottom">
-          <u-section title="收藏热门 50">
-            <view class="action text-black text-sm" slot="right">
-              <view class="cuIcon-settings margin-right-xs"></view>
-              管理
-            </view>
-          </u-section>
-        </view>
-        <van-cell-group>
-          <van-cell :title="item.name"
-                    title-class="text-df"
-                    center
-                    clickable
-                    :label="item.al.name"
-                    v-for="(item,index) in hotSongs"
-                    :key="index">
-            <text slot="icon" class="cu-avatar radius text-grey bg-white sm avatar-text margin-right">{{ index + 1}}
-            </text>
-            <text class="cuIcon-moreandroid lg text-gray" slot="right-icon"/>
-          </van-cell>
-          <van-cell center is-link url="songs">
-            <view class="action text-center text-gray text-df">全部歌曲</view>
-          </van-cell>
-        </van-cell-group>
+      <van-tab title="单曲" id="tab">
+        <song-list :list="hotSongs" @complete="showChannelsDialog">
+          <view slot="title" class="action text-black text-bold">
+            收藏热门 50
+          </view>
+        </song-list>
+        <van-cell center is-link url="songs">
+          <view class="action text-center text-gray text-df">全部歌曲</view>
+        </van-cell>
+        <!--        </van-cell-group>-->
       </van-tab>
       <van-tab title="专辑">
         <van-cell-group>
@@ -71,32 +61,37 @@
         </van-cell>
       </van-tab>
     </van-tabs>
+    <song-action/>
+    <channel-selector :show="showChannels" @change="showChannels = $event" :songs="selectSongs"/>
   </view>
 
 </template>
 
-<script lang="ts">
-import Vue                    from 'vue';
+<script>
 import {mapActions, mapState} from "vuex";
 import musicRequest           from "@/common/music.api";
 import {formatTimeCommit}     from "@/common/util";
+import SongList               from "@/components/song-list";
+import ChannelSelector        from "@/components/channel-selector";
 
-export default Vue.extend({
+export default {
+  components: {ChannelSelector, SongList},
   data()
   {
     return {
-      curTab      : 0,
-      artistId    : '',
-      hotSongs    : [],
+      curTab       : 0,
+      artistId     : '',
+      hotSongs     : [],
       // @ts-ignore
-      navbarHeight: this.CustomBar,
-      isFixed     : false,
-      albumsInfo  : {
+      navbarHeight : this.CustomBar,
+      toolBarHeight: 0,
+      isFixed      : false,
+      albumsInfo   : {
         more  : true,
         list  : [],
         status: 'loadmore'
       },
-      tabs        : [
+      tabs         : [
         {
           name: '歌曲'
         },
@@ -104,12 +99,14 @@ export default Vue.extend({
           name: '专辑'
         }
       ],
-      navBg       : {
+      navBg        : {
         backgroundColor: '#00000000',
       },
-      navBg_w     : {
+      navBg_w      : {
         backgroundColor: '#fff',
-      }
+      },
+      showChannels : false,
+      selectSongs  : []
     }
   },
   onReachBottom()
@@ -122,21 +119,26 @@ export default Vue.extend({
   },
   mounted()
   {
+    // const query = uni.createSelectorQuery().in(this);
+    // query.select('#tab').boundingClientRect(data => {
+    //   console.log("tabs", data)
+    //   this.toolBarHeight = data.top
+    // }).exec();
   },
-  computed: {
+  computed  : {
     ...mapState(["currentArtist"])
   },
-  onLoad(query: Record<string, string | undefined>)
+  onLoad(query)
   {
     this.getHotSongs();
   },
-  methods : {
+  methods   : {
     ...mapActions(['saveCurrentArtist']),
-    scroll(e: any)
+    scroll(e)
     {
       this.isFixed = e.detail.isFixed
     },
-    tabChanged(e: any)
+    tabChanged(e)
     {
       console.log(e)
       this.curTab = e.detail.index
@@ -147,10 +149,14 @@ export default Vue.extend({
     },
     getHotSongs()
     {
-      musicRequest.get(`/artists?id=${this.currentArtist.id}`).then((value: any) =>
+      musicRequest.get(`/artists?id=${this.currentArtist.id}`).then((value) =>
       {
         console.log("热门歌曲", value)
         this.saveCurrentArtist(value.artist)
+        value.hotSongs.forEach(item =>
+        {
+          item.checked = false
+        })
         this.hotSongs = value.hotSongs;
       })
     },
@@ -158,7 +164,7 @@ export default Vue.extend({
     {
       const offset = this.albumsInfo.list.length;
       this.albumsInfo.status = 'loading'
-      musicRequest.get(`/artist/album?id=${this.currentArtist.id}&offset=${offset}`).then((value: any) =>
+      musicRequest.get(`/artist/album?id=${this.currentArtist.id}&offset=${offset}`).then((value) =>
       {
         console.log("加载专辑", value)
         this.albumsInfo.more = value.more
@@ -174,9 +180,15 @@ export default Vue.extend({
           this.albumsInfo.status = 'nomore'
         }
       })
-    }
+    },
+    showChannelsDialog(e)
+    {
+      if (e.length > 0)
+        this.selectSongs = e
+      this.showChannels = true;
+    },
   }
-})
+}
 </script>
 
 <style scoped>

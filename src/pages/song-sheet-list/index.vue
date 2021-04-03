@@ -1,6 +1,7 @@
 <template>
   <van-tabs v-if="catlist"
             :active="active"
+            color="#5578eb"
             id="tabs"
             animated
             @change="tabChanged"
@@ -8,8 +9,8 @@
             swipeable>
     <van-tab :title="item.name" :key="index" v-for="(item,index) in catlist">
       <view class="cu-list grid" :class="['col-3','no-border']">
-        <view class="cu-item" v-for="(item1,index1) in item.data.playlists" :key="index1">
-          <song-grid :src="`${item1.coverImgUrl}?param=200y200`" :title="item1.name"/>
+        <view class="cu-item" v-for="(item1,index1) in item.data.playlists" :key="index1" @click="openSongSheet(item1.id,0)">
+          <song-grid  :src="`${item1.coverImgUrl}?param=200y200`" :title="item1.name"/>
         </view>
       </view>
       <van-cell>
@@ -31,7 +32,7 @@ export default Vue.extend({
     return {
       catlist: null,
       active : 0,
-      status: 'loadmore',
+      status : 'loadmore',
     }
   },
   onLoad()
@@ -41,7 +42,7 @@ export default Vue.extend({
   onReachBottom()
   {
     console.log("加载更多")
-    const item:any = this.catlist![this.active];
+    const item: any = this.catlist![this.active];
     if (item.data.more)
     {
       this.getPlaylist(this.active)
@@ -52,7 +53,7 @@ export default Vue.extend({
     {
       console.log("tab改变", e);
       this.active = e.detail.index;
-      const item:any = this.catlist![this.active];
+      const item: any = this.catlist![this.active];
       if (item.page == 0)
       {
         this.getPlaylist(this.active)
@@ -119,6 +120,12 @@ export default Vue.extend({
           }
           this.catlist = list
         }
+      })
+    },
+    openSongSheet(id: number, type: number)
+    {
+      uni.navigateTo({
+        url: '../song-sheet/index?id=' + id + "&type=" + type,
       })
     },
   }

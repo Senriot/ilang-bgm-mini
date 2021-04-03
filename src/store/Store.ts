@@ -5,16 +5,18 @@ Vue.use(Vuex)
 
 const store = new Vuex.Store({
     state    : {
-        hasLogin     : false,
-        userinfo     : {},
-        openId       : '',
-        deviceId     : uni.getStorageSync("deviceId"),
-        currentDevice: {},
-        currentArtist: {},
-        songSheetProp: {
+        hasLogin        : false,
+        userinfo        : {},
+        openId          : '',
+        deviceId        : null,
+        currentDevice   : uni.getStorageSync("currentDevice"),
+        currentArtist   : {},
+        songSheetProp   : {
             item  : {},
             isShow: false
-        }
+        },
+        showSongSelector: false,
+        selectedSong    : null
     },
     getters  : {
         openId       : state => state.openId,
@@ -44,10 +46,6 @@ const store = new Vuex.Store({
         deviceId     : (state, payload) =>
         {
             state.deviceId = payload
-            uni.setStorage({
-                key : 'deviceId',
-                data: payload
-            })
         },
         currentDevice: (state, payload) =>
         {

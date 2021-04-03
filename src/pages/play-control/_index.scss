@@ -46,7 +46,6 @@ movable-view{
   border-radius: 4rpx;
 }
 .kongzhi-bottom{
-  margin-top: 30rpx;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -54,4 +53,16 @@ movable-view{
 .kongzhi-bottom>image{
   width: 50rpx;
   height: 50rpx;
+}
+
+.van-swipe-cell__left,
+.van-swipe-cell__right {
+  display: inline-block;
+  width: 65px;
+  height: 100%;
+  font-size: 15px;
+  line-height: 100%;
+  color: #fff;
+  text-align: center;
+  background-color: #ee0a24;
 }

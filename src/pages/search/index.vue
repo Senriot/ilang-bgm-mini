@@ -61,7 +61,7 @@
         </van-cell>
       </van-cell-group>
     </view>
-    <van-tabs v-if="showResult" :active="currentTab" @change="swiperChange" sticky :offset-top="navbarHeight">
+    <van-tabs v-if="showResult" :color="'#5578eb'" :active="currentTab" @change="swiperChange" sticky :offset-top="navbarHeight">
       <van-tab title="单曲">
         <van-cell-group>
           <van-cell :title="item.name"
@@ -70,10 +70,8 @@
                     clickable
                     :label="item.artists[0].name+'-'+item.album.name"
                     v-for="(item,index) in songs.list"
-                    is-link
-                    :url="`../song-sheet/index?type=2&id=${item.id}`"
+                    @click="songSelected(item)"
                     :key="index">
-            <!--              <image slot="icon" class="cu-avatar radius lg margin-right" :src="`${item.al.picUrl}?param=100y100`"/>-->
             <text class="cuIcon-moreandroid lg text-gray" slot="right-icon"/>
           </van-cell>
           <van-cell>
@@ -134,18 +132,23 @@
         </van-cell-group>
       </van-tab>
     </van-tabs>
+    <song-action/>
   </view>
 </template>
 
-<script lang="ts">
-import Vue                from 'vue';
+<script>
 import musicRequest       from "@/common/music.api";
-import {formatTimeCommit} from "@/common/util";
-import {mapActions}       from "vuex";
+import {formatTimeCommit}     from "@/common/util";
+import {mapActions, mapState} from "vuex";
+import {checkSong}            from "@/mixin/check-song";
 
 const {windowHeight} = uni.getSystemInfoSync();
 
-export default Vue.extend({
+export default {
+  mixins    : [checkSong],
+  computed: {
+    ...mapState(['songSheetProp'])
+  },
   components: {},
   data()
   {
@@ -162,28 +165,28 @@ export default Vue.extend({
       showSuggest    : false,
       searchSuggests : [],
       songs          : {
-        list   : [],
-        count  : -1,
-        more   : true,
-        status : 'loadmore'
+        list  : [],
+        count : -1,
+        more  : true,
+        status: 'loadmore'
       },
       artists        : {
-        list   : [],
-        count  : -1,
-        more   : true,
-        status : 'loadmore'
+        list  : [],
+        count : -1,
+        more  : true,
+        status: 'loadmore'
       },
       albums         : {
-        list   : [],
-        count  : -1,
-        more   : true,
-        status : 'loadmore'
+        list  : [],
+        count : -1,
+        more  : true,
+        status: 'loadmore'
       },
       playlists      : {
-        list   : [],
-        count  : -1,
-        more   : true,
-        status : 'loadmore'
+        list  : [],
+        count : -1,
+        more  : true,
+        status: 'loadmore'
       },
       searchType     : [
         {
@@ -223,7 +226,7 @@ export default Vue.extend({
       this.navbarHeight = data.height
     }).exec();
   },
-  onLoad(query: Record<string, string | undefined>)
+  onLoad(query)
   {
     this.device = uni.getStorageSync("device");
     uni.$on("close_action_sheet", () =>
@@ -241,34 +244,7 @@ export default Vue.extend({
   },
   methods   : {
     ...mapActions(['saveCurrentArtist']),
-    songCellTap(song: any)
-    {
-      // console.log(song);
-      // checkSong(song.id, (success, msg) =>
-      // {
-      //   if (success)
-      //   {
-      //     getSongDetail(song.id, (value) =>
-      //     {
-      //       if (value)
-      //       {
-      //         this.actionSheetItem = {
-      //           name  : value.name,
-      //           id    : value.id,
-      //           picUrl: value.al.picUrl,
-      //           artist: value.ar[0]
-      //         };
-      //         this.showSheet = true
-      //       }
-      //     })
-      //   }
-      //   else
-      //   {
-      //     uni.showModal({title: "提示", content: msg})
-      //   }
-      // });
-    },
-    inpuText(e: any)
+    inpuText(e)
     {
       // console.log(e);
       // const value = e.detail.value;
@@ -289,7 +265,7 @@ export default Vue.extend({
       musicRequest.get("/search/suggest", {
         keywords: this.searchKey,
         type    : "mobile"
-      }).then((value: any) =>
+      }).then((value) =>
       {
         if (value.code == 200)
         {
@@ -298,31 +274,31 @@ export default Vue.extend({
         }
       })
     },
-    search(key: string)
+    search(key)
     {
       this.songs = {
-        list   : [],
-        count  : -1,
-        more   : true,
-        status : 'loadmore'
+        list  : [],
+        count : -1,
+        more  : true,
+        status: 'loadmore'
       };
       this.artists = {
-        list   : [],
-        count  : -1,
-        more   : true,
-        status : 'loadmore'
+        list  : [],
+        count : -1,
+        more  : true,
+        status: 'loadmore'
       };
       this.albums = {
-        list   : [],
-        count  : -1,
-        more   : true,
-        status : 'loadmore'
+        list  : [],
+        count : -1,
+        more  : true,
+        status: 'loadmore'
       };
       this.playlists = {
-        list   : [],
-        count  : -1,
-        more   : true,
-        status : 'loadmore'
+        list  : [],
+        count : -1,
+        more  : true,
+        status: 'loadmore'
       };
 
       switch (this.currentTab)
@@ -359,13 +335,13 @@ export default Vue.extend({
         this.history = history
       }
     },
-    onSearch(e: any)
+    onSearch(e)
     {
       this.showSuggest = false;
       this.showResult = true;
       this.search(this.searchKey);
     },
-    chooseKey(e: any)
+    chooseKey(e)
     {
       const key = e.currentTarget.dataset.key.keyword;
       this.showResult = true;
@@ -374,14 +350,14 @@ export default Vue.extend({
 
       this.search(key)
     },
-    chooseHotItem(e: any)
+    chooseHotItem(e)
     {
       this.showResult = true;
       this.showSuggest = false;
       this.searchKey = e.searchWord;
       this.search(this.searchKey)
     },
-    swiperChange(e: any)
+    swiperChange(e)
     {
       console.log(e);
       this.currentTab = e.detail.index;
@@ -401,7 +377,7 @@ export default Vue.extend({
           break
       }
     },
-    loadMore(e: any)
+    loadMore(e)
     {
       const cTab = this.currentTab;
       switch (cTab)
@@ -433,7 +409,7 @@ export default Vue.extend({
           keywords: searchKey,
           type    : 1,
           offset  : offset,
-        }).then((value: any) =>
+        }).then((value) =>
         {
           console.log("搜索单曲", value)
           if (value.code == 200)
@@ -460,7 +436,7 @@ export default Vue.extend({
           keywords: this.searchKey,
           type    : 100,
           offset  : offset
-        }).then((value: any) =>
+        }).then((value) =>
         {
           console.log("搜索歌星", value)
           const data = value;
@@ -488,7 +464,7 @@ export default Vue.extend({
           keywords: this.searchKey,
           type    : 10,
           offset
-        }).then((value: any) =>
+        }).then((value) =>
         {
           if (value.code == 200)
           {
@@ -510,8 +486,6 @@ export default Vue.extend({
           }
         })
       }
-
-
     },
     loadPlaylist()
     {
@@ -524,7 +498,7 @@ export default Vue.extend({
           keywords: this.searchKey,
           type    : 1000,
           offset
-        }).then((value: any) =>
+        }).then((value) =>
         {
           if (value.code == 200)
           {
@@ -542,11 +516,10 @@ export default Vue.extend({
           }
         })
       }
-
     },
     getSearchHotDetail()
     {
-      musicRequest.get("/search/hot/detail").then((value: any) =>
+      musicRequest.get("/search/hot/detail").then((value) =>
       {
         if (value.code == 200)
         {
@@ -561,7 +534,7 @@ export default Vue.extend({
         delta: 1
       })
     },
-    tabSelect(e: any)
+    tabSelect(e)
     {
       this.currentTab = e.currentTarget.dataset.id;
     },
@@ -570,7 +543,7 @@ export default Vue.extend({
       uni.setStorageSync("history", []);
       this.history = []
     },
-    chooseHistory(item: string)
+    chooseHistory(item)
     {
       console.log(item);
       this.searchKey = item;
@@ -578,7 +551,7 @@ export default Vue.extend({
       this.showSuggest = false;
       this.search(item)
     },
-    showArtistDetail(item: any)
+    showArtistDetail(item)
     {
       this.saveCurrentArtist(item)
       uni.navigateTo({
@@ -587,7 +560,7 @@ export default Vue.extend({
     }
   },
 
-})
+}
 </script>
 
 <style>

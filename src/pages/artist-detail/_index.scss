@@ -21,6 +21,16 @@
 .header_title {
   position: absolute;
   bottom: 0;
-  margin-left: 30rpx;
-  margin-bottom: 30rpx;
+  margin: 30rpx;
+}
+
+.briefDesc
+{
+  color: #f8f8f8;
+  text-overflow:      -o-ellipsis-lastline;
+  overflow:           hidden;
+  display:            -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp:         3;
+  -webkit-box-orient: vertical;
 }

@@ -60,7 +60,6 @@
     "core-js": "^3.6.5",
     "flyio": "^0.6.2",
     "miniprogram-request": "^5.1.10",
-    "mqtt": "4.1.0",
     "regenerator-runtime": "^0.12.1",
     "vue": "^2.6.11",
     "vue-class-component": "^6.3.2",

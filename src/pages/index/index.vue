@@ -1,24 +1,22 @@
 <template>
-  <view>
-    <!--    <van-sticky id="searchBar">-->
-    <!--      <view class="cu-bar search bg-white" @click="openSearch">-->
-    <!--        <view class="search-form round">-->
-    <!--          <text class="cuIcon-search"></text>-->
-    <!--          <text class="text-grey">搜索歌曲、歌单、歌星、专辑</text>-->
-    <!--        </view>-->
-    <!--      </view>-->
-    <!--    </van-sticky>-->
-
-    <van-tabs id="tabBar" :active="active" sticky>
+  <view class="page" style="background: white">
+    <van-sticky>
+      <view id="searchBar" class="cu-bar search bg-white" @click="openSearch">
+        <view class="search-form round">
+          <text class="cuIcon-search"></text>
+          <text class="text-grey">输入搜索关键词</text>
+        </view>
+      </view>
+    </van-sticky>
+    <van-tabs id="tabBar"
+              :color="'#5578eb'"
+              animated
+              :active="active"
+              @change="tabChanged"
+              swipeable
+              sticky
+              :offset-top="searchHeight">
       <van-tab title="音乐" id="musicTab">
-        <van-sticky id="searchBar" :offset-top="searchHeight">
-          <view class="cu-bar search bg-white" @click="openSearch">
-            <view class="search-form round">
-              <text class="cuIcon-search"></text>
-              <text class="text-grey">搜索歌曲、歌单、歌星、专辑</text>
-            </view>
-          </view>
-        </van-sticky>
         <swiper :autoplay="true"
                 :circular="true"
                 :indicator-dots="true"
@@ -71,7 +69,7 @@
           <u-section title="新歌推荐"></u-section>
         </view>
         <view class="cu-list menu-avatar">
-          <view class="cu-item " v-for="(item,index) in newSongs" @click="songCellTap(item)">
+          <view class="cu-item " :key="index" v-for="(item,index) in newSongs" @click="songCellTap(item)">
             <image :src="`${item.picUrl}?param=100y100`" class="cu-avatar radius lg"></image>
             <view class="content">
               <view class="text-cut">{{item.name}}</view>
@@ -99,71 +97,160 @@
           </view>
         </view>
       </van-tab>
-      <van-tab title="儿童">儿童</van-tab>
-      <van-tab title="国学">国学</van-tab>
-      <van-tab title="戏曲">戏曲</van-tab>
-      <van-tab title="故事">故事</van-tab>
-      <van-tab title="相声">相声</van-tab>
+      <van-tab :title="item.name" :key="index" v-for="(item,index) in tabs">
+        <loading v-if="item.loading"/>
+        <view v-if="item.data">
+          <view class="cu-bar bg-white solid-bottom">
+            <u-section title="单曲" font-siz="38" @click="moreSingle(item.name,'song')"></u-section>
+          </view>
+          <view class="cu-list menu-avatar" v-if="item.data">
+            <view class="cu-item "
+                  :key="i"
+                  v-for="(song,i) in item.data.song.songs"
+                  @click="selectSingle(song)">
+              <image :src="`${song.al.picUrl}?param=100y100`" class="cu-avatar radius lg"></image>
+              <view class="content">
+                <view class="text-cut">{{song.name}}</view>
+                <view class="text-gray text-sm flex">
+                  <view class="text-cut">{{song.ar[0].name}}</view>
+                </view>
+              </view>
+              <view class="action">
+                <text class="cuIcon-moreandroid lg text-gray"/>
+              </view>
+            </view>
+          </view>
+          <view class="cu-bar bg-white solid-bottom" v-if="item.data">
+            <u-section title="歌手" font-siz="38" @click="moreSingle(item.name,'artist')"></u-section>
+          </view>
+          <van-cell-group>
+            <van-cell :key="i"
+                      @click="showArtistDetail(artist)"
+                      :title="artist.name"
+                      center
+                      is-link
+                      v-for="(artist,i) in item.data.artist.artists">
+              <image slot="icon" class="cu-avatar round lg margin-right" :src="`${artist.img1v1Url}?param=100y100`"/>
+            </van-cell>
+          </van-cell-group>
+          <view class="cu-bar bg-white solid-bottom" v-if="item.data">
+            <u-section title="专辑" font-siz="38" @click="moreSingle(item.name,'album')"></u-section>
+          </view>
+          <view class="cu-list grid col-3 no-border">
+            <view :key="i"
+                  @click="openSongSheet(item.id,2)"
+                  class="cu-item"
+                  v-for="(album,i) in item.data.album.albums">
+              <song-grid :src="`${album.blurPicUrl}?param=200y200`"
+                         :sub-title="album.artist.name"
+                         :title="album.name">
+              </song-grid>
+            </view>
+          </view>
+          <view class="cu-bar bg-white solid-bottom" v-if="item.data">
+            <u-section title="歌单" font-siz="38" @click="moreSingle(item.name,'playlist')"></u-section>
+          </view>
+          <van-cell-group>
+            <van-cell :title="playList.name"
+                      title-class="text-df"
+                      center
+                      clickable
+                      :label="playList.creator.nickname"
+                      :value="playList.trackCount +'首'"
+                      v-for="(playList,i) in item.data.playList.playLists"
+                      is-link
+                      :url="`../song-sheet/index?id=${playList.id}&type==0`"
+                      :key="i">
+              <image slot="icon"
+                     class="cu-avatar radius lg margin-right"
+                     :src="`${playList.coverImgUrl}?param=100y100`"/>
+            </van-cell>
+          </van-cell-group>
+        </view>
+      </van-tab>
     </van-tabs>
     <song-action/>
   </view>
 </template>
 
-<script lang="ts">
-import Vue                             from 'vue';
+<script>
 import {mapActions, mapState}          from "vuex";
 import {Banner, BannerRes}             from "@/model";
 import {Personalized, PersonalizedRes} from "@/model/Personalized";
 import {NewSong, NewSongRes}           from "@/model/NewSong";
 import {Album, AlbumRes}               from "@/model/Album";
 import musicRequest                    from "@/common/music.api";
-import {mqttService}                   from "@/common/mqtt.service";
 import SongGrid                        from "@/components/song-grid.vue";
 import SongActionSheet                 from "@/components/song-action-sheet.vue";
+import srvRequest                      from "@/common/server.api";
+import {mqttConnect, send, subscribe}  from "@/common/mqtt.service";
+import Loading                         from "@/components/loading";
 
 
-export default Vue.extend({
-  components: {SongGrid},
+export default {
+  components: {Loading, SongGrid},
   data()
   {
     return {
       active      : 0,
       searchHeight: 0,
-      banners     : Array<Banner>(),
-      personalized: Array<Personalized>(),
-      newSongs    : Array<NewSong>(),
-      newest      : Array<Album>(),
+      banners     : [],
+      personalized: [],
+      newSongs    : [],
+      newest      : [],
+      otherData   : {},
+      tabs        : [{
+        name   : "儿童",
+        data   : null,
+        loading: true
+      }, {
+        name   : "国学",
+        data   : null,
+        loading: true
+      }, {
+        name   : "戏曲",
+        data   : null,
+        loading: true
+      }, {
+        name   : "故事",
+        data   : null,
+        loading: true
+      }, {
+        name   : "相声",
+        data   : null,
+        loading: true
+      }],
       iconList    : [
         {
-          icon : '/static/歌手-2@3x.png',
+          icon : '../../static/artist-2@3x.png',
           color: 'cyan',
           badge: 0,
           name : '歌手',
           url  : '../artist-category/index'
         },
         {
-          icon : '/static/歌单-2@3x.png',
+          icon : '../../static/playlist-2@3x.png',
           color: 'orange',
           badge: 0,
           name : '歌单',
           url  : '../song-sheet-list/index'
         },
         {
-          icon : '/static/排行榜-2@2x.png',
+          icon : '../../static/rank-2@2x.png',
           color: 'yellow',
           badge: 0,
           name : '排行榜',
           url  : '../rank/index'
         },
         {
-          icon : '/static/HIFI-2@3x.png',
+          icon : '../../static/HIFI-2@3x.png',
           color: 'olive',
           badge: 0,
           name : '无损',
           url  : '../ape-flac/ape-flac'
         },
         {
-          icon : '/static/轻音-2@3x.png',
+          icon : '../../static/qingyin-2@3x.png',
           color: 'olive',
           badge: 0,
           name : '轻音',
@@ -174,45 +261,60 @@ export default Vue.extend({
     }
   },
   computed  : {
-    ...mapState(['deviceId'])
+    ...mapState(['deviceId', "openId", "currentDevice"])
   },
-  
-  onLoad(query: Record<string, string | undefined>)
+
+  onLoad(query)
   {
     uni.$on("mqtt_connected", () =>
     {
       if (this.deviceId)
       {
-        mqttService.deviceId = this.deviceId
+        console.log("二维码扫描ID")
+        subscribe(this.deviceId)
+        send("/device/bgm/getDeviceInfo", {deviceId: this.deviceId})
+      }
+      else if (this.currentDevice.devId != undefined)
+      {
+        console.log("缓存id", this.currentDevice.devId)
+        subscribe(this.currentDevice.devId)
+        send("/device/bgm/getDeviceInfo", {deviceId: this.currentDevice.devId})
       }
     });
+    console.log("启动参数", query)
     const url = query.q;
     if (url)
     {
-      const id = decodeURIComponent(url).split("=")[1];
+      const mr = decodeURIComponent(url).split("/");
+      console.log(mr)
+      const id = mr[mr.length - 1]
       this.saveDeviceId(id)
+    }
+    if (!this.openId)
+    {
+      uni.login({
+        success: result =>
+        {
+          console.log(result)
+          srvRequest.post(`ilang/wx/login?jsCode=${result.code}`).then((res) =>
+          {
+            console.log("登录成功", res)
+            const openId = res.result.openid;
+            this.saveOpenId(openId)
+            mqttConnect(openId)
+          })
+        },
+        fail   : result =>
+        {
+
+        }
+      })
     }
     else
     {
-      this.saveDeviceId("00e099011d88")
+      mqttConnect(this.openId)
     }
 
-    uni.$on("close_action_sheet", () =>
-    {
-      this.showSheet = false
-    });
-    uni.$on("mqtt", result =>
-    {
-      console.log(result)
-      const topic: string = result.topic;
-      if (topic.includes("/device/bgm/getDeviceInfo"))
-      {
-        const obj = JSON.parse(result.payload);
-        const device = obj.device;
-        device.channelList = obj.channels;
-        this.saveCurrentDevice(device)
-      }
-    });
     this.init();
   },
   onReady()
@@ -220,8 +322,8 @@ export default Vue.extend({
 
 
   },
-  methods   : {
-    ...mapActions(["saveDeviceId", 'saveCurrentDevice', "setSongSheetProp"]),
+  methods: {
+    ...mapActions(["saveDeviceId", 'saveOpenId', 'saveCurrentDevice', "setSongSheetProp", "saveCurrentArtist"]),
     // cardSwiper(e: any)
     // {
     //   this.cardCur = e.detail.current
@@ -239,7 +341,7 @@ export default Vue.extend({
 
     getBanners()
     {
-      musicRequest.get<BannerRes>("/banner").then(value =>
+      musicRequest.get("/banner").then(value =>
       {
         if (value.code == 200)
         {
@@ -250,7 +352,7 @@ export default Vue.extend({
 
     getPersonalized()
     {
-      musicRequest.get<PersonalizedRes>("/personalized?limit=6").then(value =>
+      musicRequest.get("/personalized?limit=6").then(value =>
       {
         if (value.code == 200)
           this.personalized = value.result
@@ -264,7 +366,7 @@ export default Vue.extend({
     },
     getNewSongs()
     {
-      musicRequest.get<NewSongRes>("/personalized/newsong").then(value =>
+      musicRequest.get("/personalized/newsong").then(value =>
       {
         if (value.code == 200)
           this.newSongs = value.result
@@ -272,7 +374,7 @@ export default Vue.extend({
     },
     getNewest()
     {
-      musicRequest.get<AlbumRes>("/album/newest").then(value =>
+      musicRequest.get("/album/newest").then(value =>
       {
         if (value.code == 200)
         {
@@ -280,20 +382,20 @@ export default Vue.extend({
         }
       })
     },
-    openSearch(e: any)
+    openSearch(e)
     {
       console.log("开始搜索", e)
       uni.navigateTo({
         url: `../search/index`
       })
     },
-    openSongSheet(id: number, type: number)
+    openSongSheet(id, type)
     {
       uni.navigateTo({
         url: '../song-sheet/index?id=' + id + "&type=" + type,
       })
     },
-    bannerTap(id: number, type: number)
+    bannerTap(id, type)
     {
       if (type == 10)
       {
@@ -302,16 +404,17 @@ export default Vue.extend({
         })
       }
     },
-    async songCellTap(song: any)
+    async songCellTap(song)
     {
-      const s: any = await musicRequest.get("/check/music", {id: song.id})
+      const s = await musicRequest.get("/check/music", {id: song.id})
       if (s.success)
       {
         this.setSongSheetProp({
           isShow: true,
           item  : {
-            ...song,
-            artist: song.song.artists[0]
+            ...song.song,
+            al: song.song.album,
+            ar: song.song.artists
           }
         })
       }
@@ -321,43 +424,71 @@ export default Vue.extend({
           title: s.message
         })
       }
-      console.log(s)
-      // checkSong(song.id, (succeed, msg) =>
-      // {
-      //   if (succeed)
-      //   {
-      //     this.actionSheetItem = {
-      //       ...song,
-      //       artist: song.song.artists[0]
-      //     };
-      //     this.showSheet = true
-      //   }
-      //   else
-      //   {
-      //     uni.showToast({
-      //       title: msg
-      //     })
-      //   }
-      // });
-
     },
-    openPage(item: any)
+    openPage(item)
     {
       uni.navigateTo({
         url: item.url
+      })
+    },
+    async selectSingle(song)
+    {
+      const s = await musicRequest.get("/check/music", {id: song.id})
+      if (s.success)
+      {
+        this.setSongSheetProp({
+          isShow: true,
+          item  : song
+        })
+      }
+      else
+      {
+        uni.showToast({
+          title: s.message
+        })
+      }
+    },
+    async tabChanged(e)
+    {
+      console.log(e)
+      if (e.detail.index > 0)
+      {
+        let data = this.tabs[e.detail.index - 1].data
+        console.log("其他数据", data)
+        if (!data)
+        {
+          const res = await musicRequest.get(`/search?keywords=${e.detail.title}&type=1018`);
+          this.tabs[e.detail.index - 1].data = res.result;
+          this.tabs[e.detail.index - 1].loading = false
+          console.log("其他数据", this.tabs)
+        }
+      }
+    },
+    showArtistDetail(e)
+    {
+      this.saveCurrentArtist(e)
+      uni.navigateTo({
+        url: `../artist-detail/index`
+      })
+    },
+    moreSingle(tab, type)
+    {
+      console.log(tab, type)
+      uni.navigateTo({
+        url: `MoreSingle?title=${tab}&type=${type}`
       })
     }
   },
   mounted()
   {
     const query = uni.createSelectorQuery().in(this);
-    query.select('#musicTab').boundingClientRect(data =>
+    query.select('#searchBar').boundingClientRect(data =>
     {
       console.log("tabbar", data)
-      this.searchHeight = data.top!
+      this.searchHeight = data.bottom
     }).exec();
   }
-})
+}
 </script>
 
 <style>

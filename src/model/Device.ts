@@ -27,8 +27,9 @@ export interface DeviceChannel
     deviceId: string;
     chIndex: number;
     name: string;
-    playId?: any;
-    playName?: any;
+    // playId?: any;
+    // playName?: any;
+    // playType?: number;
     status: string;
     createBy: string;
     createTime: string;
@@ -36,4 +37,8 @@ export interface DeviceChannel
     updateBy?: any;
     updateTime?: any;
     sysOrgCode: string;
+    checked: boolean,
+    enabled: boolean,
+    nowPlaying?: object,
+    isPlaying: boolean
 }
