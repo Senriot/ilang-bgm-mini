@@ -1,4 +1,4 @@
-# ilang-bgm-mini
+### 多通道背景音乐小程序
 
 ## Project setup
 ```
